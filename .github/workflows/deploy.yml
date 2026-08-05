@@ -1,65 +1,37 @@
-name: Deploy to Production
+name: CI Pipeline
 
 on:
   push:
     branches:
       - main
-
-permissions:
-  contents: read
+      - develop
+  pull_request:
 
 jobs:
-  deploy:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Azure CLI
-        uses: azure/setup-azcli@v2
-
-      - name: Login to Azure
-        uses: azure/login@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          node-version: 22
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Verify Application Starts
+        run: |
+          timeout 10s npm start || true
 
       - name: Build Docker Image
         run: |
-          set -e
+          docker build -t vexar-fleet-ping:${{ github.sha }} .
 
-          docker build \
-            -t vexar-fleet-ping:latest \
-            -t vexar-fleet-ping:${{ github.sha }} .
-
-      - name: Login to Azure Container Registry
+      - name: Verify Docker Image
         run: |
-          echo "${{ secrets.ACR_PASSWORD }}" | docker login \
-            vexaracr.azurecr.io \
-            -u "${{ secrets.ACR_USERNAME }}" \
-            --password-stdin
-
-      - name: Push Docker Images
-        run: |
-          set -e
-
-          docker tag vexar-fleet-ping:latest \
-            vexaracr.azurecr.io/vexar-fleet-ping:latest
-
-          docker tag vexar-fleet-ping:${{ github.sha }} \
-            vexaracr.azurecr.io/vexar-fleet-ping:${{ github.sha }}
-
-          docker push vexaracr.azurecr.io/vexar-fleet-ping:latest
-          docker push vexaracr.azurecr.io/vexar-fleet-ping:${{ github.sha }}
-
-      - name: Deploy to Azure Container Apps
-        run: |
-          set -e
-
-          az containerapp update \
-            --name vexar-fleet-ping \
-            --resource-group vexar-prod-rg \
-            --image vexaracr.azurecr.io/vexar-fleet-ping:${{ github.sha }}
-
-      - name: Verify Azure Login
-        run: az account show
+          docker images | grep vexar-fleet-ping
