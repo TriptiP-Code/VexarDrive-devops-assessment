@@ -1,112 +1,261 @@
-# Fleet Ping Service
+# VexarDrive Fleet Ping Service – Production Readiness Assessment
 
-The Fleet Ping Service is a Node.js/Express backend service used to receive vehicle location updates and handle driver authentication.
+## Overview
 
-The service uses PostgreSQL for persistent storage and is containerized using Docker.
+This repository contains my submission for the **VexarDrive DevOps Assessment**.
 
-## Technology Stack
+The objective was to review an inherited Node.js application and prepare it for production by improving its containerization, deployment strategy, security, infrastructure design, and operational readiness.
 
-* Node.js
-* Express.js
-* PostgreSQL
-* Docker
-* GitHub Actions
+The assessment focuses on engineering decisions rather than simply making the application run.
 
-## API Endpoints
+---
 
-The service currently provides endpoints for:
+# Repository Structure
 
-* Driver login
-* Vehicle location ping ingestion
-* Fleet ping retrieval
+```
+.
+├── .github/
+│   └── workflows/
+│       └── deploy.yml
+├── terraform/
+│   ├── provider.tf
+│   ├── variables.tf
+│   ├── network.tf
+│   ├── postgres.tf
+│   ├── keyvault.tf
+│   ├── containerapp.tf
+│   ├── monitoring.tf
+│   ├── outputs.tf
+│   └── README.md
+├── Dockerfile
+├── docker-compose.yml
+├── server.js
+├── package.json
+├── .dockerignore
+├── .gitignore
+├── production-review.md
+├── database-operations.md
+├── secrets-identity-networking.md
+├── monitoring-observability.md
+├── architecture-diagram.md
+├── technical-report.md
+└── README.md
+```
 
-Refer to the application source for endpoint definitions, request formats, and current behavior.
+---
+
+# Improvements Implemented
+
+## Application
+
+- Replaced per-request PostgreSQL connections with a shared connection pool.
+- Added `/health` endpoint.
+- Added `/ready` endpoint with database connectivity checks.
+- Added graceful shutdown handling.
+- Improved database error handling.
+- Parameterized SQL query for the login endpoint.
+
+---
+
+## Containerization
+
+- Switched from `node:latest` to `node:22-alpine`.
+- Reduced Docker image size.
+- Added `.dockerignore`.
+- Added `.gitignore`.
+- Optimized dependency installation using `npm ci`.
+- Added Docker health checks.
+- Added restart policy.
+- Externalized configuration using environment variables.
+
+---
+
+## Infrastructure
+
+Designed Azure infrastructure using Terraform for:
+
+- Azure Container Apps
+- Azure Database for PostgreSQL
+- Azure Key Vault
+- Azure Virtual Network
+- Azure Monitor
+- Log Analytics Workspace
+
+---
+
+## CI/CD
+
+Designed an improved GitHub Actions pipeline covering:
+
+- Checkout
+- Install Dependencies
+- Test
+- Build
+- Containerize
+- Push Image
+- Deploy
+- Verify Deployment
+
+The workflow also documents future production enhancements including security scanning, deployment approvals, rollback strategy, and multi-environment deployments.
+
+---
+
+## Monitoring
+
+Implemented:
+
+- Health endpoint
+- Readiness endpoint
+- Docker health checks
+
+Proposed production monitoring includes:
+
+- Azure Monitor
+- Application Insights
+- Log Analytics
+- Operational alerts
+
+---
+
+# Running the Application
 
 ## Prerequisites
 
-To run the service locally, ensure you have:
+- Docker
+- Docker Compose
 
-* Node.js
-* npm
-* PostgreSQL
+---
 
-Alternatively, the application and database can be started using Docker Compose.
-
-## Local Setup
-
-Install dependencies:
+## Clone Repository
 
 ```bash
-npm install
+git clone <repository-url>
+cd devops-assessment
 ```
 
-Configure the required environment variables using the provided environment configuration.
+---
 
-Start the application:
+## Configure Environment
 
-```bash
-node server.js
+Create a `.env` file.
+
+Example:
+
+```env
+PORT=3000
+NODE_ENV=development
+
+DB_HOST=db
+DB_PORT=5432
+DB_USER=vexaradmin
+DB_PASSWORD=your_password
+DB_NAME=vexar_fleet
+
+JWT_SECRET=your_secret
 ```
 
-The service will start on the configured application port.
+---
 
-## Database
-
-The service uses PostgreSQL.
-
-The initial database structure is available in:
-
-```text
-schema.sql
-```
-
-Apply the schema to your local PostgreSQL instance before running the application.
-
-## Docker
-
-The repository includes:
-
-```text
-Dockerfile
-docker-compose.yml
-```
-
-To start the application using Docker Compose:
+## Start the Application
 
 ```bash
 docker compose up --build
 ```
 
-## Configuration
+---
 
-Application configuration is managed through environment variables.
+## Verify Health
 
-Review the existing configuration and application source to determine the variables required to run the service.
+Application:
 
-## CI/CD
-
-A GitHub Actions workflow is included in the repository.
-
-Changes pushed to the `main` branch currently trigger the configured deployment workflow.
-
-## Repository Structure
-
-```text
-.
-├── .github/
-│   └── workflows/
-├── Dockerfile
-├── docker-compose.yml
-├── schema.sql
-├── server.js
-├── package.json
-└── README.md
+```
+http://localhost:3000/health
 ```
 
-## Assessment Context
+Readiness:
 
-This repository is provided as part of the **VexarDrive Technologies DevOps & Cloud Infrastructure Engineer Technical Assessment**.
+```
+http://localhost:3000/ready
+```
 
-Review the repository in its current state before making changes.
+---
 
-Your assessment brief contains the requirements, expected deliverables, and submission instructions.
+# Documentation
+
+The following documents are included as part of the assessment:
+
+| Document | Description |
+|----------|-------------|
+| `production-review.md` | Initial repository assessment and production readiness review |
+| `database-operations.md` | Database operations strategy |
+| `secrets-identity-networking.md` | Security model and networking design |
+| `monitoring-observability.md` | Monitoring and observability strategy |
+| `architecture-diagram.md` | Proposed Azure architecture |
+| `technical-report.md` | Engineering decisions and implementation summary |
+
+---
+
+# Technology Stack
+
+Application
+
+- Node.js
+- Express
+- PostgreSQL
+
+Containerization
+
+- Docker
+- Docker Compose
+
+Cloud
+
+- Azure Container Apps
+- Azure Database for PostgreSQL
+- Azure Key Vault
+- Azure Monitor
+
+Infrastructure as Code
+
+- Terraform
+
+CI/CD
+
+- GitHub Actions
+
+---
+
+# Future Improvements
+
+Given additional time, I would further enhance the solution by:
+
+- Database migration automation using Flyway or Liquibase
+- Running containers as a non-root user
+- Structured logging with Pino or Winston
+- Automated unit and integration tests
+- Container vulnerability scanning (Trivy)
+- Blue-Green or Canary deployments
+- Azure Application Insights integration
+- Automatic secret rotation through Azure Key Vault
+
+---
+
+# Assessment Deliverables
+
+- ✅ Application Review & Production Readiness
+- ✅ Containerization
+- ✅ Infrastructure as Code (Terraform)
+- ✅ CI/CD Pipeline
+- ✅ Database Operations
+- ✅ Secrets, Identity & Networking
+- ✅ Monitoring & Observability
+- ✅ Architecture Diagram
+- ✅ Technical Report
+
+---
+
+# Author
+
+**Tripti Pandey**
+
+DevOps Engineer | AWS | Docker | Kubernetes | Terraform | Azure | CI/CD
