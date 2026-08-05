@@ -2,6 +2,7 @@
 // NOTE: This is a deliberately trimmed-down module extracted from a larger monorepo
 // for the purposes of this assessment. Treat it as inherited legacy code.
 
+require("dotenv").config();
 const express = require("express");
 const { Client } = require("pg");
 const jwt = require("jsonwebtoken");
@@ -12,14 +13,14 @@ app.use(express.json());
 // --- DB connection ---------------------------------------------------
 // Hardcoded credentials (intentional - do not "just" move to .env and stop there)
 const DB_CONFIG = {
-  host: "vexar-pg-prod.postgres.database.azure.com",
-  port: 5432,
-  user: "vexaradmin",
-  password: "V3xar@2024!Prod",
-  database: "vexar_fleet",
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
 };
 
-const JWT_SECRET = "vexar-super-secret-key-2024";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // --- Routes ------------------------------------------------------------
 
