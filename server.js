@@ -120,8 +120,30 @@ app.get("/ready", async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
+
+
+// Graceful Shutdown
+const shutdown = async (signal) => {
+  console.log(`\nReceived ${signal}. Shutting down gracefully...`);
+
+  server.close(async () => {
+    console.log("HTTP server closed.");
+
+    try {
+      await pool.end();
+      console.log("Database connection pool closed.");
+      process.exit(0);
+    } catch (err) {
+      console.error("Error closing database pool:", err);
+      process.exit(1);
+    }
+  });
+};
+
+process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => shutdown("SIGTERM"));
 
 module.exports = app;
