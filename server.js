@@ -60,8 +60,9 @@ app.post("/api/auth/login", async (req, res) => {
 
   try {
     const result = await pool.query(
-      `SELECT * FROM drivers WHERE phone = '${phone}'`
-    );
+  `SELECT * FROM drivers WHERE phone = $1`,
+  [phone]
+);
 
     if (result.rows.length === 0) {
       return res.status(401).json({ error: "Driver not found" });
