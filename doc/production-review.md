@@ -88,7 +88,12 @@ This section will be updated throughout the assessment as improvements are imple
 
 | Change | Reason |
 |---------|--------|
-| *To be updated* | |
+| Change                                              | Reason             
+| Introduced environment variable based configuration | Removed hardcoded configuration from application code       |
+| Added `.env.example`                                | Documented required configuration without exposing secrets  |
+| Configured Docker Compose environment variables     | Enabled consistent configuration across environments        |
+| Added `dotenv`                                      | Allowed runtime configuration through environment variables |
+
 
 ---
 
