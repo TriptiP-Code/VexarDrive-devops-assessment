@@ -3,6 +3,7 @@
 // for the purposes of this assessment. Treat it as inherited legacy code.
 
 require("dotenv").config();
+const authenticate = require("./middleware/auth");
 
 const express = require("express");
 const { Pool } = require("pg");
@@ -84,7 +85,10 @@ app.post("/api/auth/login", async (req, res) => {
 });
 
 // Admin endpoint
-app.get("/api/admin/drivers", async (req, res) => {
+app.get(
+    "/api/admin/drivers",
+    authenticate,
+    async (req, res) => {
   try {
     const result = await pool.query(`SELECT * FROM drivers`);
     res.json(result.rows);
