@@ -94,6 +94,30 @@ app.get("/api/admin/drivers", async (req, res) => {
   }
 });
 
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "UP",
+    service: "Fleet Ping Service",
+    timestamp: new Date().toISOString(),
+  });
+});
+
+app.get("/ready", async (req, res) => {
+  try {
+    await pool.query("SELECT 1");
+
+    res.status(200).json({
+      status: "READY",
+      database: "Connected",
+    });
+  } catch (err) {
+    res.status(503).json({
+      status: "NOT_READY",
+      database: "Unavailable",
+    });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
